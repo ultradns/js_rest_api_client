@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/bootstrap.css">
   <script src="lib/angular/angular.js"></script>
-  <script src="js/authctrl.js"></script>
+  <script src="js/ctrl.js"></script>
 
 </head>
 <body>
@@ -17,7 +17,7 @@
 
 </script>
 
-<div ng-controller="AuthCtrl" ng-model="authResponse">
+<div ng-controller="Ctrl" ng-model="authResponse">
 
    Rest API Url: <input type="text" name="apiurl" ng-model="apiurl" required>
    <br> <br>
@@ -30,11 +30,24 @@
 
    <button id="Authorize" ng-click="authorize()">Authorize</button><br>
 
-<hr>
-<pre>Access Token: {{authResponse.accessToken}}</pre>
-<pre>Refresh Token: {{authResponse.refreshToken}}</pre>
+    <hr>
+    <pre>Access Token: {{authResponse.accessToken}}</pre>
+    <pre>Refresh Token: {{authResponse.refreshToken}}</pre>
 
+    <hr>
 
+    <div>
+        <button id="Get Status" ng-click="makeAuthorizedRequest('/status', 'GET')">Get Status</button><br>
+        <br>
+        <pre>Status: {{generalResponse.message}}</pre>
+    </div>
+    <hr>
+
+    <div>
+        <button id="Get Version" ng-click="makeRequest('/version', 'GET')">Get Version</button><br>
+        <br>
+        <pre>Version: {{generalResponse.version}}</pre>
+    </div>
 
 </div>
 </body>
