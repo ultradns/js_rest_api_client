@@ -30,7 +30,8 @@
 
    <button id="Authorize" ng-click="authorize()">Authorize</button><br>
 
-    <hr>
+    <br>
+
     <pre>Access Token: {{authResponse.accessToken}}</pre>
     <pre>Refresh Token: {{authResponse.refreshToken}}</pre>
 
@@ -47,6 +48,22 @@
         <button id="Get Version" ng-click="makeRequest('/version', 'GET')">Get Version</button><br>
         <br>
         <pre>Version: {{generalResponse.version}}</pre>
+    </div>
+
+    <hr>
+
+    <div>
+        Zonename: <input type="text" name="name" ng-model="zone.properties.name" required>
+        <br> <br>
+
+        Account Name: <input type="text" name="accountName" ng-model="zone.properties.accountName" required>
+        <br> <br>
+
+        <pre>Zone JSON: {{zoneJson}}</pre>
+
+        <button id="Create Primary Zone" ng-click="createZone()">Create Primary Zone</button><br>
+        <br>
+        <pre>Response: {{generalResponse.message}}</pre>
     </div>
 
 </div>
