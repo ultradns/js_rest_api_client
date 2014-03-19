@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" ng-app="ura">
+<head>
+  <meta charset="utf-8">
+  <title>Auth</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <script src="lib/angular/angular.js"></script>
+  <script src="js/authctrl.js"></script>
+
+</head>
+<body>
+
+<script>
+    angular.module('ura', []);
+
+
+</script>
+
+<div ng-controller="AuthCtrl" ng-model="authResponse">
+
+   Rest API Url: <input type="text" name="apiurl" ng-model="apiurl" required>
+   <br> <br>
+
+   Username: <input type="text" name="username" ng-model="username"required>
+   <br> <br>
+
+   Password: <input type="text" name="password" ng-model="password" ng-minlength="3" ng-maxlength="40" required>
+   <br> <br>
+
+   <button id="Authorize" ng-click="authorize()">Authorize</button><br>
+
+<hr>
+<pre>Access Token: {{authResponse.accessToken}}</pre>
+<pre>Refresh Token: {{authResponse.refreshToken}}</pre>
+
+
+
+</div>
+</body>
+</html>
