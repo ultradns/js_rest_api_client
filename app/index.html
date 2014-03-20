@@ -19,6 +19,7 @@
 
 <div ng-controller="Ctrl" ng-model="authResponse">
 
+    <!-- AUTHORIZE WITH PASSWORD -->
    Rest API Url: <input type="text" name="apiurl" ng-model="apiurl" required>
    <br> <br>
 
@@ -26,32 +27,48 @@
    <br> <br>
 
    Password: <input type="text" name="password" ng-model="password" ng-minlength="3" ng-maxlength="40" required>
-   <br> <br>
 
-   <button id="Authorize" ng-click="authorize()">Authorize</button><br>
-
+   <button id="Authorize" ng-click="authorize()">Authorize with Password</button><br>
     <br>
 
-    <pre>Access Token: {{authResponse.accessToken}}</pre>
-    <pre>Refresh Token: {{authResponse.refreshToken}}</pre>
 
+    <!-- AUTHORIZE WITH REFRESH TOKEN -->
+    <!--<pre>Access Token: {{authResponse.accessToken}}</pre>-->
+    <pre> You may obtain the tokens either by using 'Authorize with Password' or 'Authorize with Refresh Token' or you may enter the values of the tokens yourself</pre>
+    Access Token: <input type="text" name="accessToken" ng-model="authResponse.accessToken"><br>
+    Refresh Token:<input type="text" name="accessToken" ng-model="authResponse.refreshToken">
+
+    <button id="AuthorizeWithRefreshToken" ng-click="authorizeWithRefreshToken()">Authorize with Refresh Token</button><br>
     <hr>
 
-    <div>
-        <button id="Get Status" ng-click="makeAuthorizedRequest('/status', 'GET')">Get Status</button><br>
-        <br>
-        <pre>Status: {{generalResponse.message}}</pre>
-    </div>
-    <hr>
 
+    <!-- VERSION -->
     <div>
         <button id="Get Version" ng-click="makeRequest('/version', 'GET')">Get Version</button><br>
         <br>
-        <pre>Version: {{generalResponse.version}}</pre>
     </div>
-
     <hr>
 
+
+    <!-- STATUS -->
+    <div>
+        <button id="Get Status" ng-click="makeAuthorizedRequest('/status', 'GET')">Get Status</button><br>
+        <br>
+    </div>
+    <hr>
+
+
+    <!-- GET ACCOUNT DETAILS-->
+    <div>
+        <button id="Get Account Details" ng-click="makeAuthorizedRequest('/accounts', 'GET')">Get Account Details</button><br>
+        <br>
+    </div>
+    <hr>
+
+
+
+
+    <!-- CREATE PRIMARY ZONE -->
     <div>
         Zonename: <input type="text" name="name" ng-model="zone.properties.name" required>
         <br> <br>
@@ -59,11 +76,87 @@
         Account Name: <input type="text" name="accountName" ng-model="zone.properties.accountName" required>
         <br> <br>
 
+        Type: <input type="text" name="type" ng-model="zone.properties.type" readonly>
+        <br> <br>
+
+        Create Type: <input type="text" name="createType" ng-model="zone.primaryCreateInfo.createType" readonly>
+        <br> <br>
+
+        Force Import: <input type="text" name="forceImport" ng-model="zone.primaryCreateInfo.forceImport" readonly>
+        <br> <br>
+
         <pre>Zone JSON: {{zoneJson}}</pre>
 
         <button id="Create Primary Zone" ng-click="createZone()">Create Primary Zone</button><br>
         <br>
-        <pre>Response: {{generalResponse.message}}</pre>
+
+    </div>
+    <hr>
+
+
+    <!-- GET ZONE METADATA -->
+    <div>
+        Zonename: <input type="text" name="name" ng-model="zoneNameToGet" required>
+        <br> <br>
+
+        <button id="Get Zone Meta Data" ng-click="makeAuthorizedRequest('/zones/' + zoneNameToGet, 'GET')">Get Zone Metadata</button><br>
+        <br>
+    </div>
+    <hr>
+
+
+
+    <!-- GET ZONES OF ACCOUNT-->
+    <div>
+        Account Name: <input type="text" name="name" ng-model="accountNameToGetZonesOf" required>
+        <br> <br>
+
+        <button id="Get Zones of Account" ng-click="makeAuthorizedRequest('/accounts/' + accountNameToGetZonesOf + '/zones', 'GET')">Get Zones of Account</button><br>
+        <br>
+    </div>
+    <hr>
+
+
+    <!-- CREATE RR SET-->
+    <div>
+        Zonename: <input type="text" name="name" ng-model="rrsetPathParam.zone" required>
+        <br> <br>
+
+        Owner Name: <input type="text" name="accountName" ng-model="rrsetPathParam.owner" required>
+        <br> <br>
+
+        Record Type: <input type="text" name="type" ng-model="rrsetPathParam.recordType" required>
+        <br> <br>
+
+        TTL: <input type="text" name="ttl" ng-model="rrset.ttl">
+        <br> <br>
+
+       <!--R Data: <input type="text" name="rdata" ng-model="rrset.rdata">
+        <br> <br>-->
+        RData: <input name="rdataInput" ng-model="rrset.rdata" ng-list required>
+
+        Profile Context: <input type="text" name="context" ng-model="rrset.profile.context" readonly>
+        <br> <br>
+
+        Order: <input type="text" name="order" ng-model="rrset.profile.order">
+        <br> <br>
+
+        Description: <input type="text" name="description" ng-model="rrset.profile.description">
+        <br> <br>
+
+
+        <pre>RRSet JSON: {{rrsetJson}}</pre>
+
+        <button id="Create RR Set" ng-click="createRRSet()">Create RR Set</button><br>
+        <br>
+
+    </div>
+    <hr>
+
+
+    <div  style="position:fixed; top:0; right:0;">
+        <pre style="background-color:yellow">Response: {{generalResponse}}</pre>
+        <pre style="background-color:orange">Suggestion: {{generalAdvice}}</pre>
     </div>
 
 </div>
