@@ -103,7 +103,11 @@ function Ctrl($scope, $http, $parse) {
 
     $scope.createRRSet = function() {
         //$scope.rrset.rdata = $scope.rdata;
-        $scope.rrsetJson = angular.toJson($scope.rrset);
-        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner, 'POST', $json);
+        var origJson = angular.toJson($scope.rrset);
+        var replacedJson = origJson.replace("context", "@context");
+        $scope.rrsetJson = replacedJson;
+
+        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
+            'POST', replacedJson);
     }
 }
