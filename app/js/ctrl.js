@@ -29,7 +29,6 @@ function Ctrl($scope, $http, $parse) {
   // $scope.rdata = ['1.2.3.4', '2.4.6.8', '3.5.7.8'];
 
   $scope.authorize = function() {
-    $scope.generalAdvice = '';
     $http({method:'POST',
         url:$scope.apiurl + '/authorization/token',
         data:"grant_type=password&username=" + $scope.username + "&password=" + $scope.password,
@@ -44,16 +43,17 @@ function Ctrl($scope, $http, $parse) {
         });
   };
 
-  $scope.authorizeWithRefreshToken = function() {
-      $scope.generalAdvice = '';
+  $scope.authorizeWithRefreshToken = function(callback) {
       $http({method:'POST',
           url:$scope.apiurl + '/authorization/token',
           data:"grant_type=refresh_token&refresh_token=" + $scope.authResponse.refreshToken,
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
           .success(function (data, status, headers, config) {
-            console.log("authorizeWithRefreshToken SUCCESS:::::" + data)
             $scope.authResponse = data;
             $scope.generalResponse = data;
+            if(callback != null) {
+                callback();
+            }
           })
           .error(function (data, status, headers, config) {
               $scope.authResponse = '';
@@ -62,7 +62,6 @@ function Ctrl($scope, $http, $parse) {
     };
 
   $scope.makeRequest = function(requestUrl, method) {
-      $scope.generalAdvice = '';
       $http({method: method,
           url:$scope.apiurl + requestUrl,
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
@@ -75,8 +74,7 @@ function Ctrl($scope, $http, $parse) {
     };
 
 
-    $scope.makeAuthorizedRequest = function(requestUrl, method, inputLoad) {
-        $scope.generalAdvice = '';
+    $scope.makeAuthorizedRequest = function(requestUrl, method, inputLoad, doNotReattempt) {
         $http({method: method,
             url:$scope.apiurl + requestUrl,
             data: inputLoad,
@@ -87,11 +85,17 @@ function Ctrl($scope, $http, $parse) {
             })
             .error(function (data, status, headers, config) {
                 $scope.generalResponse = data;
-                $scope.generalAdvice = 'If accessToken has expired, re-authorize using password or refreshToken and try request again';
-                // Following calls not working appropriately, the authWithRefToken is not setting authResponse
-                // data in some cases, so it goes into a recursion
-                //$scope.authorizeWithRefreshToken();
-                //$scope.makeAuthorizedRequest(requestUrl, method, inputLoad);
+                var errorCode = $scope.generalResponse.errorCode;
+
+                // reattempt after refreshing token. Only do so once to make sure that we do not keep retrying
+                // also attempt only if it is an auth error and not anything else.
+                if(errorCode == '60001' && doNotReattempt != 'true') {
+                    // specifying callback to be called on success of refresh token retrieval
+                    // the callback will attempt to make another request with new token values
+                    $scope.authorizeWithRefreshToken(function() {
+                        $scope.makeAuthorizedRequest(requestUrl, method, inputLoad, 'true');
+                    });
+                }
             });
       };
 
