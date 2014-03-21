@@ -101,13 +101,21 @@ function Ctrl($scope, $http, $parse) {
 
     }
 
-    $scope.createRRSet = function() {
-        //$scope.rrset.rdata = $scope.rdata;
+    $scope.massageRRSetJson = function() {
         var origJson = angular.toJson($scope.rrset);
         var replacedJson = origJson.replace("context", "@context");
         $scope.rrsetJson = replacedJson;
-
-        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
-            'POST', replacedJson);
     }
+
+    $scope.createRRSet = function() {
+        $scope.massageRRSetJson();
+        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
+            'POST', $scope.rrsetJson);
+    }
+
+    $scope.updateRRSet = function() {
+        $scope.massageRRSetJson();
+        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
+            'PUT', $scope.rrsetJson);
+        }
 }

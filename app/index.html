@@ -68,7 +68,7 @@
 
 
 
-    <!-- CREATE PRIMARY ZONE -->
+    <!-- ZONE OPERATIONS-->
     <div>
         Zonename: <input type="text" name="name" ng-model="zone.properties.name" required>
         <br> <br>
@@ -87,37 +87,19 @@
 
         <pre>Zone JSON: {{zoneJson}}</pre>
 
-        <button id="Create Primary Zone" ng-click="createZone()">Create Primary Zone</button><br>
+        <button id="Create Primary Zone" ng-click="createZone()">Create Primary Zone</button>
+        <button id="Get Zone Meta Data" ng-click="makeAuthorizedRequest('/zones/' + zone.properties.name, 'GET')">Get Zone Metadata</button>
+        <button id="Get Zones of Account" ng-click="makeAuthorizedRequest('/accounts/' + zone.properties.accountName + '/zones', 'GET')">Get Zones of Account</button>
+        <button id="Delete Zone " ng-click="makeAuthorizedRequest('/zones/' + zone.properties.name, 'DELETE')">Delete Zone</button>
+        <br>
         <br>
 
     </div>
     <hr>
 
 
-    <!-- GET ZONE METADATA -->
-    <div>
-        Zonename: <input type="text" name="name" ng-model="zoneNameToGet" required>
-        <br> <br>
 
-        <button id="Get Zone Meta Data" ng-click="makeAuthorizedRequest('/zones/' + zoneNameToGet, 'GET')">Get Zone Metadata</button><br>
-        <br>
-    </div>
-    <hr>
-
-
-
-    <!-- GET ZONES OF ACCOUNT-->
-    <div>
-        Account Name: <input type="text" name="name" ng-model="accountNameToGetZonesOf" required>
-        <br> <br>
-
-        <button id="Get Zones of Account" ng-click="makeAuthorizedRequest('/accounts/' + accountNameToGetZonesOf + '/zones', 'GET')">Get Zones of Account</button><br>
-        <br>
-    </div>
-    <hr>
-
-
-    <!-- CREATE RR SET-->
+    <!-- RR SET OPERATIONS-->
     <div>
         Zonename: <input type="text" name="name" ng-model="rrsetPathParam.zone" required>
         <br> <br>
@@ -148,14 +130,25 @@
 
         <pre>RRSet JSON: {{rrsetJson}}</pre>
 
-        <button id="Create RR Set" ng-click="createRRSet()">Create RR Set</button><br>
+        <button id="Create RR Set" ng-click="createRRSet()">Create RR Set</button>
+        <button id="Update RR Set" ng-click="updateRRSet()">Update RR Set</button>
+        <button id="Get RRSet of Zone" ng-click="makeAuthorizedRequest('/zones/' + rrsetPathParam.zone + '/rrsets', 'GET')">Get RRSets of Zone</button>
+        <button id="Get RRSet of Zone and Type"
+                ng-click="makeAuthorizedRequest('/zones/' + rrsetPathParam.zone + '/rrsets/' + rrsetPathParam.recordType, 'GET')">Get RRSet of Zone and Type
+        </button>
+        <button id="Delete RR Set" ng-click="makeAuthorizedRequest
+            ('/zones/' + rrsetPathParam.zone + '/rrsets/' + rrsetPathParam.recordType + '/' + rrsetPathParam.owner, 'DELETE')">Delete RR Set
+        </button>
+        <br>
         <br>
 
     </div>
     <hr>
 
 
-    <div  style="position:fixed; top:0; right:0;">
+
+    <!-- Response Area -->
+    <div  style="position:fixed; top:0; right:0; max-width:500px;">
         <pre style="background-color:yellow">Response: {{generalResponse}}</pre>
         <pre style="background-color:orange">Suggestion: {{generalAdvice}}</pre>
     </div>
