@@ -146,6 +146,32 @@
     <hr>
 
 
+    <!-- To send any JSON Request -->
+    <div>
+        Request URI: <input type="text" name="name" ng-model="generic.uri" required>
+        <br> <br>
+
+        <input type="radio" ng-model="generic.method" value="GET"> GET <br/>
+        <input type="radio" ng-model="generic.method" value="POST"> POST <br/>
+        <input type="radio" ng-model="generic.method" value="PUT"> PUT <br/>
+        <input type="radio" ng-model="generic.method" value="PATCH"> PATCH <br/>
+        <input type="radio" ng-model="generic.method" value="DELETE "> DELETE <br/>
+        <br> <br>
+
+        Input JSON Payload: <textarea type="textarea" name="payload" ng-model="generic.payload" required></textarea>
+        <br> <br>
+
+        <button id="Generic Request" ng-click="makeAuthorizedRequest('/' + generic.uri, generic.method, generic.payload)">
+            Make Request
+        </button>
+        <br> <br>
+
+    </div>
+    <hr>
+
+
+
+
 
     <!-- Response Area -->
     <div  style="position:fixed; top:0; right:0; max-width:500px;">

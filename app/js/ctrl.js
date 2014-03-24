@@ -75,28 +75,32 @@ function Ctrl($scope, $http, $parse) {
 
 
     $scope.makeAuthorizedRequest = function(requestUrl, method, inputLoad, doNotReattempt) {
-        $http({method: method,
-            url:$scope.apiurl + requestUrl,
-            data: inputLoad,
-            withCredentials: true,
-            headers: {'Authorization': 'Bearer ' + $scope.authResponse.accessToken}})
-            .success(function (data, status, headers, config) {
-                $scope.generalResponse = data;
-            })
-            .error(function (data, status, headers, config) {
-                $scope.generalResponse = data;
-                var errorCode = $scope.generalResponse.errorCode;
+        if($scope.authResponse == undefined) {
+            $scope.generalResponse = 'Access Token is required to make request';
+        } else {
+            $http({method: method,
+                url:$scope.apiurl + requestUrl,
+                data: inputLoad,
+                withCredentials: true,
+                headers: {'Authorization': 'Bearer ' + $scope.authResponse.accessToken}})
+                .success(function (data, status, headers, config) {
+                    $scope.generalResponse = data;
+                })
+                .error(function (data, status, headers, config) {
+                    $scope.generalResponse = data;
+                    var errorCode = $scope.generalResponse.errorCode;
 
-                // reattempt after refreshing token. Only do so once to make sure that we do not keep retrying
-                // also attempt only if it is an auth error and not anything else.
-                if(errorCode == '60001' && doNotReattempt != 'true') {
-                    // specifying callback to be called on success of refresh token retrieval
-                    // the callback will attempt to make another request with new token values
-                    $scope.authorizeWithRefreshToken(function() {
-                        $scope.makeAuthorizedRequest(requestUrl, method, inputLoad, 'true');
-                    });
-                }
-            });
+                    // reattempt after refreshing token. Only do so once to make sure that we do not keep retrying
+                    // also attempt only if it is an auth error and not anything else.
+                    if(errorCode == '60001' && doNotReattempt != 'true') {
+                        // specifying callback to be called on success of refresh token retrieval
+                        // the callback will attempt to make another request with new token values
+                        $scope.authorizeWithRefreshToken(function() {
+                            $scope.makeAuthorizedRequest(requestUrl, method, inputLoad, 'true');
+                        });
+                    }
+                });
+            }
       };
 
     $scope.createZone = function() {
