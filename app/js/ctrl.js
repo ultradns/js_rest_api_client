@@ -20,13 +20,15 @@ function Ctrl($scope, $http, $parse) {
 
   // default rr set creation values
 
-  $scope.assign('rrset.profile.context', 'http:\/\/schemas.ultradns.com\/RDPool.jsonschema');
-  $scope.assign('rrset.profile.order', 'RANDOM');
-  $scope.assign('rrset.profile.description', 'This is a great RD Pool');
-  $scope.assign('rrset.ttl', '300');
-
-  $scope.assign('rrset.rdata', ['1.2.3.4', '2.4.6.8', '3.5.7.8']);
+  $scope.assign('rdpool.profile.context', 'http:\/\/schemas.ultradns.com\/RDPool.jsonschema');
+  $scope.assign('rdpool.profile.order', 'RANDOM');
+  $scope.assign('rdpool.profile.description', 'This is a great RD Pool');
+  $scope.assign('rdpool.ttl', '300');
+  $scope.assign('rdpool.rdata', ['1.2.3.4', '2.4.6.8', '3.5.7.8']);
   // $scope.rdata = ['1.2.3.4', '2.4.6.8', '3.5.7.8'];
+
+  $scope.assign('rrset.ttl', '300');
+  $scope.assign('rrset.rdata', ['1.2.3.4']);
 
   $scope.authorize = function() {
     $http({method:'POST',
@@ -109,21 +111,33 @@ function Ctrl($scope, $http, $parse) {
 
     }
 
-    $scope.massageRRSetJson = function() {
-        var origJson = angular.toJson($scope.rrset);
+    $scope.massageRDPoolJson = function() {
+        var origJson = angular.toJson($scope.rdpool);
         var replacedJson = origJson.replace("context", "@context");
-        $scope.rrsetJson = replacedJson;
+        $scope.rdpoolJson = replacedJson;
     }
 
     $scope.createRRSet = function() {
-        $scope.massageRRSetJson();
+        $scope.rrsetJson = angular.toJson($scope.rrset);
         $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
             'POST', $scope.rrsetJson);
     }
 
     $scope.updateRRSet = function() {
-        $scope.massageRRSetJson();
+    $scope.rrsetJson = angular.toJson($scope.rrset);
         $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
             'PUT', $scope.rrsetJson);
-        }
+    }
+
+    $scope.createRDPool = function() {
+            $scope.massageRDPoolJson();
+            $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
+                'POST', $scope.rdpoolJson);
+    }
+
+    $scope.updateRDPool = function() {
+        $scope.massageRDPoolJson();
+        $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
+            'PUT', $scope.rdpoolJson);
+    }
 }

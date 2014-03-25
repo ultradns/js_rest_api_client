@@ -118,15 +118,6 @@
         RData: <input name="rdataInput" ng-model="rrset.rdata" ng-list required>
         <br> <br>
 
-        Profile Context: <input type="text" name="context" ng-model="rrset.profile.context" readonly>
-        <br> <br>
-
-        Order: <input type="text" name="order" ng-model="rrset.profile.order">
-        <br> <br>
-
-        Description: <input type="text" name="description" ng-model="rrset.profile.description">
-        <br> <br>
-
 
         <pre>RRSet JSON: {{rrsetJson}}</pre>
 
@@ -146,16 +137,67 @@
     <hr>
 
 
+    <!-- RD POOL OPERATIONS-->
+    <div>
+        Zonename: <input type="text" name="name" ng-model="rdpoolPathParam.zone" required>
+        <br> <br>
+
+        Owner Name: <input type="text" name="accountName" ng-model="rdpoolPathParam.owner" required>
+        <br> <br>
+
+        Record Type: <input type="text" name="type" ng-model="rdpoolPathParam.recordType" required>
+        <br> <br>
+
+        TTL: <input type="text" name="ttl" ng-model="rdpool.ttl">
+        <br> <br>
+
+        <!--R Data: <input type="text" name="rdata" ng-model="rrset.rdata">
+         <br> <br>-->
+        RData: <input name="rdataInput" ng-model="rdpool.rdata" ng-list required>
+        <br> <br>
+
+        Profile Context: <input type="text" name="context" ng-model="rdpool.profile.context" readonly>
+        <br> <br>
+
+        Order: <br>
+        <input type="radio" ng-model="rdpool.profile.order" value="FIXED"> FIXED &nbsp;&nbsp;
+        <input type="radio" ng-model="rdpool.profile.order" value="RANDOM"> RANDOM &nbsp;&nbsp;
+        <input type="radio" ng-model="rdpool.profile.order" value="ROUND_ROBIN"> ROUND_ROBIN
+
+        <br/>
+
+        Description: <input type="text" name="description" ng-model="rdpool.profile.description">
+        <br> <br>
+
+
+        <pre>RD Pool JSON: {{rdpoolJson}}</pre>
+
+        <button id="Create RD Pool" ng-click="createRDPool()">Create RD Pool</button>
+        <button id="Update RD Pool" ng-click="updateRDPool()">Update RD Pool</button>
+        <button id="Get RD Pool of Zone" ng-click="makeAuthorizedRequest('/zones/' + rdpoolPathParam.zone + '/rrsets', 'GET')">Get RRSets of Zone</button>
+        <button id="Get RD Pool of Zone and Type"
+                ng-click="makeAuthorizedRequest('/zones/' + rdpoolPathParam.zone + '/rrsets/' + rdpoolPathParam.recordType, 'GET')">Get RRSet of Zone and Type
+        </button>
+        <button id="Delete RD Pool" ng-click="makeAuthorizedRequest
+            ('/zones/' + rdpoolPathParam.zone + '/rrsets/' + rdpoolPathParam.recordType + '/' + rdpoolPathParam.owner, 'DELETE')">Delete RD Pool
+        </button>
+        <br>
+        <br>
+
+    </div>
+    <hr>
+
+
     <!-- To send any JSON Request -->
     <div>
         Request URI: <input type="text" name="name" ng-model="generic.uri" required>
         <br> <br>
 
-        <input type="radio" ng-model="generic.method" value="GET"> GET <br/>
-        <input type="radio" ng-model="generic.method" value="POST"> POST <br/>
-        <input type="radio" ng-model="generic.method" value="PUT"> PUT <br/>
-        <input type="radio" ng-model="generic.method" value="PATCH"> PATCH <br/>
-        <input type="radio" ng-model="generic.method" value="DELETE "> DELETE <br/>
+        <input type="radio" ng-model="generic.method" value="GET"> GET &nbsp;&nbsp;
+        <input type="radio" ng-model="generic.method" value="POST"> POST &nbsp;&nbsp;
+        <input type="radio" ng-model="generic.method" value="PUT"> PUT &nbsp;&nbsp;
+        <input type="radio" ng-model="generic.method" value="PATCH"> PATCH &nbsp;&nbsp;
+        <input type="radio" ng-model="generic.method" value="DELETE "> DELETE &nbsp;&nbsp;
         <br> <br>
 
         Input JSON Payload: <textarea type="textarea" name="payload" ng-model="generic.payload" required></textarea>
