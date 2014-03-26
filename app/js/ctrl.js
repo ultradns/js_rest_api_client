@@ -1,5 +1,7 @@
 'use strict';
 
+
+
 function Ctrl($scope, $http, $parse, $resource) {
   // default values
   $scope.apiurl = 'http://localhost:8080/v1';
@@ -7,30 +9,30 @@ function Ctrl($scope, $http, $parse, $resource) {
   $scope.password = 'Teamrest1';
 
   // Helper function to assign default initial values
-  $scope.assign = function(variable, value) {
-    var getter = $parse(variable);
-    var setter = getter.assign;
-    setter($scope, value);
+  function assign(variable, value) {
+      var getter = $parse(variable);
+      var setter = getter.assign;
+      setter($scope, value);
   }
 
   // default zone creation values
-  $scope.assign('zone.properties.type', 'PRIMARY');
-  $scope.assign('zone.primaryCreateInfo.createType', 'NEW');
-  $scope.assign('zone.primaryCreateInfo.forceImport', 'true');
+  assign('zone.properties.type', 'PRIMARY');
+  assign('zone.primaryCreateInfo.createType', 'NEW');
+  assign('zone.primaryCreateInfo.forceImport', 'true');
 
   // default rr set creation values
 
-  $scope.assign('rdpool.profile.context', 'http:\/\/schemas.ultradns.com\/RDPool.jsonschema');
-  $scope.assign('rdpool.profile.order', 'RANDOM');
-  $scope.assign('rdpool.profile.description', 'This is a great RD Pool');
-  $scope.assign('rdpool.ttl', '300');
-  $scope.assign('rdpool.rdata', ['1.2.3.4', '2.4.6.8', '3.5.7.8']);
+  assign('rdpool.profile.context', 'http:\/\/schemas.ultradns.com\/RDPool.jsonschema');
+  assign('rdpool.profile.order', 'RANDOM');
+  assign('rdpool.profile.description', 'This is a great RD Pool');
+  assign('rdpool.ttl', '300');
+  assign('rdpool.rdata', ['1.2.3.4', '2.4.6.8', '3.5.7.8']);
   // $scope.rdata = ['1.2.3.4', '2.4.6.8', '3.5.7.8'];
 
-  $scope.assign('rrset.ttl', '300');
-  $scope.assign('rrset.rdata', ['1.2.3.4']);
+  assign('rrset.ttl', '300');
+  assign('rrset.rdata', ['1.2.3.4']);
 
-  $scope.prepareResource = function(endpoint) {
+  function prepareResource(endpoint) {
     var res = $resource($scope.apiurl + endpoint,null,
         {
           'update': { method:'PUT' }
@@ -39,10 +41,53 @@ function Ctrl($scope, $http, $parse, $resource) {
   }
 
   // The need for this method is to account for any changes in the apiurl entered by the user
-  $scope.prepareRRSetResource = function() {
-    return $scope.prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
+  function prepareRRSetResource() {
+    return prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
   }
 
+  function massageRDPoolJson() {
+      var origJson = angular.toJson($scope.rdpool);
+      var replacedJson = origJson.replace("context", "@context");
+      $scope.rdpoolJson = replacedJson;
+  }
+
+  function setAuthHeader() {
+      $http.defaults.headers.common["Authorization"] = "Bearer " + $scope.authResponse.accessToken;
+  }
+
+  function onSuccess (data, status, headers, config) {
+      $scope.generalResponse = data;
+  }
+
+  function handleError(error, doNotReattempt, callback)  {
+      $scope.generalResponse = error.data;
+      var errorCode = error.data.errorCode;
+      if(errorCode == '60001' && doNotReattempt != 'true') {
+          // specifying callback to be called on success of refresh token retrieval
+          // the callback will attempt to make another request with new token values
+          $scope.authorizeWithRefreshToken(callback);
+      }
+  }
+
+  function onError (res, params, requestJson, doNotReattempt, functionToRetry) {
+      return function(error) {
+          handleError(error, doNotReattempt, function() {
+              functionToRetry(res,params, requestJson, true);
+          });
+      }
+  }
+
+  function saveRequest(res, params, requestJson, doNotReattempt) {
+      setAuthHeader();
+      res.save(params, requestJson, onSuccess,
+          onError(res, params, requestJson, doNotReattempt, saveRequest));
+  }
+
+  function updateRequest(res, params, requestJson, doNotReattempt) {
+      setAuthHeader();
+      res.update(params, requestJson, onSuccess,
+          onError(res, params, requestJson, doNotReattempt, updateRequest));
+  }
 
   $scope.authorize = function() {
     $http({method:'POST',
@@ -91,97 +136,52 @@ function Ctrl($scope, $http, $parse, $resource) {
     };
 
 
-    $scope.makeAuthorizedRequest = function(requestUrl, method, inputLoad, doNotReattempt) {
-        if($scope.authResponse == undefined) {
-            $scope.generalResponse = 'Access Token is required to make request';
-        } else {
-            $http({method: method,
-                url:$scope.apiurl + requestUrl,
-                data: inputLoad,
-                withCredentials: true,
-                headers: {'Authorization': 'Bearer ' + $scope.authResponse.accessToken}})
-                .success(function (data, status, headers, config) {
-                    $scope.generalResponse = data;
-                })
-                .error(function (data, status, headers, config) {
-                    $scope.generalResponse = data;
-                    var errorCode = $scope.generalResponse.errorCode;
+  $scope.makeAuthorizedRequest = function(requestUrl, method, inputLoad, doNotReattempt) {
+    if($scope.authResponse == undefined) {
+        $scope.generalResponse = 'Access Token is required to make request';
+    } else {
+        $http({method: method,
+            url:$scope.apiurl + requestUrl,
+            data: inputLoad,
+            withCredentials: true,
+            headers: {'Authorization': 'Bearer ' + $scope.authResponse.accessToken}})
+            .success(function (data, status, headers, config) {
+                $scope.generalResponse = data;
+            })
+            .error(function (data, status, headers, config) {
+                $scope.generalResponse = data;
+                var errorCode = $scope.generalResponse.errorCode;
 
-                    // reattempt after refreshing token. Only do so once to make sure that we do not keep retrying
-                    // also attempt only if it is an auth error and not anything else.
-                    if(errorCode == '60001' && doNotReattempt != 'true') {
-                        // specifying callback to be called on success of refresh token retrieval
-                        // the callback will attempt to make another request with new token values
-                        $scope.authorizeWithRefreshToken(function() {
-                            $scope.makeAuthorizedRequest(requestUrl, method, inputLoad, 'true');
-                        });
-                    }
-                });
+                // reattempt after refreshing token. Only do so once to make sure that we do not keep retrying
+                // also attempt only if it is an auth error and not anything else.
+                if(errorCode == '60001' && doNotReattempt != 'true') {
+                    // specifying callback to be called on success of refresh token retrieval
+                    // the callback will attempt to make another request with new token values
+                    $scope.authorizeWithRefreshToken(function() {
+                        $scope.makeAuthorizedRequest(requestUrl, method, inputLoad, 'true');
+                    });
+                }
             }
-      };
-
+        );
+    }
+  };
 
 
     $scope.createZone = function() {
         $scope.zoneJson = angular.toJson($scope.zone);
         $scope.makeAuthorizedRequest('/zones', 'POST', $scope.zoneJson);
-
-    }
-
-    $scope.massageRDPoolJson = function() {
-        var origJson = angular.toJson($scope.rdpool);
-        var replacedJson = origJson.replace("context", "@context");
-        $scope.rdpoolJson = replacedJson;
-    }
-
-    $scope.setAuthHeader = function() {
-        $http.defaults.headers.common["Authorization"] = "Bearer " + $scope.authResponse.accessToken;
-    }
-
-    $scope.onSuccess = function(data, status, headers, config) {
-        $scope.generalResponse = data;
-    }
-
-    $scope.handleError = function(error, doNotReattempt, callback)  {
-        $scope.generalResponse = error.data;
-        var errorCode = error.data.errorCode;
-        if(errorCode == '60001' && doNotReattempt != 'true') {
-            // specifying callback to be called on success of refresh token retrieval
-            // the callback will attempt to make another request with new token values
-            $scope.authorizeWithRefreshToken(callback);
-        }
-    }
-
-    $scope.onError = function(res, params, requestJson, doNotReattempt, functionToRetry) {
-        return function(error) {
-            $scope.handleError(error, doNotReattempt, function() {
-                functionToRetry(res,params, requestJson, true);
-            });
-        }
-    }
-
-    $scope.saveRequest = function(res, params, requestJson, doNotReattempt) {
-        $scope.setAuthHeader();
-        res.save(params, requestJson, $scope.onSuccess,
-            $scope.onError(res, params, requestJson, doNotReattempt, $scope.saveRequest));
-    }
-
-    $scope.updateRequest = function(res, params, requestJson, doNotReattempt) {
-        $scope.setAuthHeader();
-        res.update(params, requestJson, $scope.onSuccess,
-            $scope.onError(res, params, requestJson, doNotReattempt, $scope.updateRequest));
     }
 
     $scope.createRRSet = function(doNotReattempt) {
         $scope.rrsetJson = angular.toJson($scope.rrset);
-        $scope.saveRequest($scope.prepareRRSetResource(),
+        saveRequest(prepareRRSetResource(),
             {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
             $scope.rrsetJson);
     }
 
     $scope.updateRRSet = function(doNotReattempt) {
         $scope.rrsetJson = angular.toJson($scope.rrset);
-        $scope.updateRequest($scope.prepareRRSetResource(),
+        updateRequest(prepareRRSetResource(),
                     {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
                     $scope.rrsetJson);
 
@@ -191,13 +191,13 @@ function Ctrl($scope, $http, $parse, $resource) {
     }
 
     $scope.createRDPool = function() {
-            $scope.massageRDPoolJson();
-            $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
-                'POST', $scope.rdpoolJson);
+        massageRDPoolJson();
+        $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
+            'POST', $scope.rdpoolJson);
     }
 
     $scope.updateRDPool = function() {
-        $scope.massageRDPoolJson();
+        massageRDPoolJson();
         $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
             'PUT', $scope.rdpoolJson);
     }
