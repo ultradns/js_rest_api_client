@@ -1,6 +1,6 @@
 'use strict';
 
-function Ctrl($scope, $http, $parse) {
+function Ctrl($scope, $http, $parse, $resource) {
   // default values
   $scope.apiurl = 'http://localhost:8080/v1';
   $scope.username = 'teamrest';
@@ -29,6 +29,21 @@ function Ctrl($scope, $http, $parse) {
 
   $scope.assign('rrset.ttl', '300');
   $scope.assign('rrset.rdata', ['1.2.3.4']);
+
+  $scope.prepareResource = function(endpoint) {
+    var res = $resource($scope.apiurl + endpoint,null,
+        {
+          'update': { method:'PUT' }
+        });
+    $scope.setAuthHeader();
+    return res;
+  }
+
+  // The need for this method is to account for any changes in the apiurl entered by the user
+  $scope.prepareRRSetResource = function() {
+    return $scope.prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
+  }
+
 
   $scope.authorize = function() {
     $http({method:'POST',
@@ -60,6 +75,7 @@ function Ctrl($scope, $http, $parse) {
           .error(function (data, status, headers, config) {
               $scope.authResponse = '';
               $scope.generalResponse = data;
+
           });
     };
 
@@ -105,6 +121,8 @@ function Ctrl($scope, $http, $parse) {
             }
       };
 
+
+
     $scope.createZone = function() {
         $scope.zoneJson = angular.toJson($scope.zone);
         $scope.makeAuthorizedRequest('/zones', 'POST', $scope.zoneJson);
@@ -117,16 +135,53 @@ function Ctrl($scope, $http, $parse) {
         $scope.rdpoolJson = replacedJson;
     }
 
-    $scope.createRRSet = function() {
+    $scope.setAuthHeader = function() {
+        $http.defaults.headers.common["Authorization"] = "Bearer " + $scope.authResponse.accessToken;
+    }
+
+    $scope.success = function(data, status, headers, config) {
+        $scope.generalResponse = data;
+    }
+
+    $scope.handleError = function(error, doNotReattempt, callback)  {
+        $scope.generalResponse = error.data;
+        var errorCode = error.data.errorCode;
+        if(errorCode == '60001' && doNotReattempt != 'true') {
+            // specifying callback to be called on success of refresh token retrieval
+            // the callback will attempt to make another request with new token values
+            $scope.authorizeWithRefreshToken(callback);
+        }
+    }
+
+    $scope.createRRSet = function(doNotReattempt) {
         $scope.rrsetJson = angular.toJson($scope.rrset);
-        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
-            'POST', $scope.rrsetJson);
+
+        $scope.prepareRRSetResource().save({'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
+            $scope.rrsetJson,
+            $scope.success,
+            function (error) {
+                $scope.handleError(error, doNotReattempt, function() {
+                    $scope.createRRSet('true');
+                })
+            }
+        );
     }
 
     $scope.updateRRSet = function() {
-    $scope.rrsetJson = angular.toJson($scope.rrset);
-        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
-            'PUT', $scope.rrsetJson);
+        $scope.rrsetJson = angular.toJson($scope.rrset);
+        $scope.prepareRRSetResource().update({'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
+            $scope.rrsetJson,
+            $scope.success,
+            function (error) {
+                $scope.handleError(error, doNotReattempt, function() {
+                    $scope.updateRRSet('true');
+                })
+            }
+        );
+
+        // Alternate Solution to use HHTP
+//        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
+//            'PUT', $scope.rrsetJson);
     }
 
     $scope.createRDPool = function() {
