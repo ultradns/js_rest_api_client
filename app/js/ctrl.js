@@ -35,7 +35,6 @@ function Ctrl($scope, $http, $parse, $resource) {
         {
           'update': { method:'PUT' }
         });
-    $scope.setAuthHeader();
     return res;
   }
 
@@ -153,31 +152,40 @@ function Ctrl($scope, $http, $parse, $resource) {
         }
     }
 
-    $scope.createRRSet = function(doNotReattempt) {
-        $scope.rrsetJson = angular.toJson($scope.rrset);
-
-        $scope.prepareRRSetResource().save({'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
-            $scope.rrsetJson,
-            $scope.success,
+    $scope.saveRequest = function(res, params, requestJson, doNotReattempt) {
+        $scope.setAuthHeader();
+        res.save(params, requestJson, $scope.success,
             function (error) {
                 $scope.handleError(error, doNotReattempt, function() {
-                    $scope.createRRSet('true');
+                    $scope.saveRequest(res, params, requestJson, 'true');
                 })
             }
         );
     }
 
-    $scope.updateRRSet = function(doNotReattempt) {
-        $scope.rrsetJson = angular.toJson($scope.rrset);
-        $scope.prepareRRSetResource().update({'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
-            $scope.rrsetJson,
-            $scope.success,
+    $scope.updateRequest = function(res, params, requestJson, doNotReattempt) {
+        $scope.setAuthHeader();
+        res.update(params, requestJson, $scope.success,
             function (error) {
                 $scope.handleError(error, doNotReattempt, function() {
-                    $scope.updateRRSet('true');
+                    $scope.updateRequest(res, params, requestJson, 'true');
                 })
             }
         );
+    }
+
+    $scope.createRRSet = function(doNotReattempt) {
+        $scope.rrsetJson = angular.toJson($scope.rrset);
+        $scope.saveRequest($scope.prepareRRSetResource(),
+            {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
+            $scope.rrsetJson);
+    }
+
+    $scope.updateRRSet = function(doNotReattempt) {
+        $scope.rrsetJson = angular.toJson($scope.rrset);
+        $scope.updateRequest($scope.prepareRRSetResource(),
+                    {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
+                    $scope.rrsetJson);
 
         // Alternate Solution to use HHTP
 //        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
