@@ -167,7 +167,7 @@ function Ctrl($scope, $http, $parse, $resource) {
         );
     }
 
-    $scope.updateRRSet = function() {
+    $scope.updateRRSet = function(doNotReattempt) {
         $scope.rrsetJson = angular.toJson($scope.rrset);
         $scope.prepareRRSetResource().update({'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
             $scope.rrsetJson,
