@@ -138,7 +138,7 @@ function Ctrl($scope, $http, $parse, $resource) {
         $http.defaults.headers.common["Authorization"] = "Bearer " + $scope.authResponse.accessToken;
     }
 
-    $scope.success = function(data, status, headers, config) {
+    $scope.onSuccess = function(data, status, headers, config) {
         $scope.generalResponse = data;
     }
 
@@ -152,26 +152,24 @@ function Ctrl($scope, $http, $parse, $resource) {
         }
     }
 
+    $scope.onError = function(res, params, requestJson, doNotReattempt, functionToRetry) {
+        return function(error) {
+            $scope.handleError(error, doNotReattempt, function() {
+                functionToRetry(res,params, requestJson, true);
+            });
+        }
+    }
+
     $scope.saveRequest = function(res, params, requestJson, doNotReattempt) {
         $scope.setAuthHeader();
-        res.save(params, requestJson, $scope.success,
-            function (error) {
-                $scope.handleError(error, doNotReattempt, function() {
-                    $scope.saveRequest(res, params, requestJson, 'true');
-                })
-            }
-        );
+        res.save(params, requestJson, $scope.onSuccess,
+            $scope.onError(res, params, requestJson, doNotReattempt, $scope.saveRequest));
     }
 
     $scope.updateRequest = function(res, params, requestJson, doNotReattempt) {
         $scope.setAuthHeader();
-        res.update(params, requestJson, $scope.success,
-            function (error) {
-                $scope.handleError(error, doNotReattempt, function() {
-                    $scope.updateRequest(res, params, requestJson, 'true');
-                })
-            }
-        );
+        res.update(params, requestJson, $scope.onSuccess,
+            $scope.onError(res, params, requestJson, doNotReattempt, $scope.updateRequest));
     }
 
     $scope.createRRSet = function(doNotReattempt) {
