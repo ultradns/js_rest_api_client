@@ -116,28 +116,28 @@ function Ctrl($scope, $http, $parse, $resource) {
       }
   }
 
-  function getRequest(res, params, doNotReattempt) {
+  $scope.getRequest = function(res, params, doNotReattempt) {
       setAuthHeader();
       res.get(params, null, $scope.onSuccess,
-          $scope.onError(res, params, null, doNotReattempt, getRequest));
+          $scope.onError(res, params, null, doNotReattempt, $scope.getRequest));
   }
 
-  function deleteRequest(res, params, doNotReattempt) {
+  $scope.deleteRequest = function(res, params, doNotReattempt) {
     setAuthHeader();
     res.delete(params, null, $scope.onSuccess,
-        $scope.onError(res, params, null, doNotReattempt, deleteRequest));
+        $scope.onError(res, params, null, doNotReattempt, $scope.deleteRequest));
   }
 
-  function saveRequest(res, params, requestJson, doNotReattempt) {
+  $scope.saveRequest = function(res, params, requestJson, doNotReattempt) {
       setAuthHeader();
       res.save(params, requestJson, $scope.onSuccess,
-          $scope.onError(res, params, requestJson, doNotReattempt, saveRequest));
+          $scope.onError(res, params, requestJson, doNotReattempt, $scope.saveRequest));
   }
 
-  function updateRequest(res, params, requestJson, doNotReattempt) {
+  $scope.updateRequest = function(res, params, requestJson, doNotReattempt) {
       setAuthHeader();
       res.update(params, requestJson, $scope.onSuccess,
-          $scope.onError(res, params, requestJson, doNotReattempt, updateRequest));
+          $scope.onError(res, params, requestJson, doNotReattempt, $scope.updateRequest));
   }
 
 
@@ -194,41 +194,6 @@ function Ctrl($scope, $http, $parse, $resource) {
     }
 
 
-
-    /** RRSet Functions - should ideally go into a separate JS file**/
-    function prepareRRSetResource() {
-        return $scope.prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
-    }
-
-    $scope.getRRSetOfZone = function(doNotReattempt) {
-        getRequest(prepareRRSetResource(),
-            {'zoneName':$scope.rrsetPathParam.zone});
-    }
-
-    $scope.getRRSetOfZoneAndType = function(doNotReattempt) {
-        getRequest(prepareRRSetResource(),
-            {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType});
-    }
-
-    $scope.deleteRRSet = function(doNotReattempt) {
-        deleteRequest(prepareRRSetResource(),
-            {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner});
-    }
-
-    $scope.createRRSet = function(doNotReattempt) {
-        $scope.rrsetJson = angular.toJson($scope.rrset);
-        saveRequest(prepareRRSetResource(),
-            {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
-            $scope.rrsetJson);
-    }
-
-    $scope.updateRRSet = function(doNotReattempt) {
-        $scope.rrsetJson = angular.toJson($scope.rrset);
-        updateRequest(prepareRRSetResource(),
-                    {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
-                    $scope.rrsetJson);
-    }
-    /** End RRSet Functions **/
 
     $scope.createRDPool = function() {
         massageRDPoolJson();

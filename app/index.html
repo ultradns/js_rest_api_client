@@ -9,7 +9,7 @@
   <script src="lib/angular/angular-resource.js"></script>
   <script src="js/ctrl.js"></script>
   <script src="js/version.js"></script>
-
+  <script src="js/rrset.js"></script>
 </head>
 <body>
 
@@ -108,7 +108,7 @@
 
 
     <!-- RR SET OPERATIONS-->
-    <div>
+    <div ng-controller="RRSetCtrl">
         Zonename: <input type="text" name="name" ng-model="rrsetPathParam.zone" required>
         <br> <br>
 
