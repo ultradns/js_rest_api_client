@@ -9,28 +9,23 @@ function Ctrl($scope, $http, $parse, $resource) {
   $scope.password = 'Teamrest1';
 
   // Helper function to assign default initial values
-  function assign(variable, value) {
+  $scope.assign = function(variable, value) {
       var getter = $parse(variable);
       var setter = getter.assign;
       setter($scope, value);
   }
 
-  // default zone creation values
-  assign('zone.properties.type', 'PRIMARY');
-  assign('zone.primaryCreateInfo.createType', 'NEW');
-  assign('zone.primaryCreateInfo.forceImport', 'true');
+
 
   // default rr set creation values
 
-  assign('rdpool.profile.context', 'http:\/\/schemas.ultradns.com\/RDPool.jsonschema');
-  assign('rdpool.profile.order', 'RANDOM');
-  assign('rdpool.profile.description', 'This is a great RD Pool');
-  assign('rdpool.ttl', '300');
-  assign('rdpool.rdata', ['1.2.3.4', '2.4.6.8', '3.5.7.8']);
+  $scope.assign('rdpool.profile.context', 'http:\/\/schemas.ultradns.com\/RDPool.jsonschema');
+  $scope.assign('rdpool.profile.order', 'RANDOM');
+  $scope.assign('rdpool.profile.description', 'This is a great RD Pool');
+  $scope.assign('rdpool.ttl', '300');
+  $scope.assign('rdpool.rdata', ['1.2.3.4', '2.4.6.8', '3.5.7.8']);
   // $scope.rdata = ['1.2.3.4', '2.4.6.8', '3.5.7.8'];
 
-  assign('rrset.ttl', '300');
-  assign('rrset.rdata', ['1.2.3.4']);
 
   // The need for this method is to account for any changes in the apiurl entered by the user
   // If there is no need to read the apiUrl as a User Input (i.e it is a constant), then the resource can be prepared
@@ -42,6 +37,11 @@ function Ctrl($scope, $http, $parse, $resource) {
         });
     return res;
   }
+
+  function setAuthHeader() {
+      $http.defaults.headers.common["Authorization"] = "Bearer " + $scope.authResponse.accessToken;
+  }
+
 
   function prepareAuthResource() {
         var res = $resource($scope.apiurl + '/authorization/token',null,
@@ -83,16 +83,6 @@ function Ctrl($scope, $http, $parse, $resource) {
     };
 
 
-
-  function massageRDPoolJson() {
-      var origJson = angular.toJson($scope.rdpool);
-      var replacedJson = origJson.replace("context", "@context");
-      $scope.rdpoolJson = replacedJson;
-  }
-
-  function setAuthHeader() {
-      $http.defaults.headers.common["Authorization"] = "Bearer " + $scope.authResponse.accessToken;
-  }
 
   $scope.onSuccess = function(data, status, headers, config) {
       $scope.generalResponse = data;
@@ -187,15 +177,5 @@ function Ctrl($scope, $http, $parse, $resource) {
     }
   };
 
-    $scope.createRDPool = function() {
-        massageRDPoolJson();
-        $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
-            'POST', $scope.rdpoolJson);
-    }
 
-    $scope.updateRDPool = function() {
-        massageRDPoolJson();
-        $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
-            'PUT', $scope.rdpoolJson);
-    }
 }

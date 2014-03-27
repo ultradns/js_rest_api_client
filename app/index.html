@@ -112,6 +112,7 @@
 
     <!-- RR SET OPERATIONS-->
     <div ng-controller="RRSetCtrl">
+    <div>
         Zonename: <input type="text" name="name" ng-model="rrsetPathParam.zone" required>
         <br> <br>
 
@@ -184,16 +185,16 @@
 
         <button id="Create RD Pool" ng-click="createRDPool()">Create RD Pool</button>
         <button id="Update RD Pool" ng-click="updateRDPool()">Update RD Pool</button>
-        <button id="Get RD Pool of Zone" ng-click="makeAuthorizedRequest('/zones/' + rdpoolPathParam.zone + '/rrsets', 'GET')">Get RRSets of Zone</button>
+        <button id="Get RD Pool of Zone" ng-click="getRDPoolOfZone()">Get RRSets of Zone</button>
         <button id="Get RD Pool of Zone and Type"
-                ng-click="makeAuthorizedRequest('/zones/' + rdpoolPathParam.zone + '/rrsets/' + rdpoolPathParam.recordType, 'GET')">Get RRSet of Zone and Type
+                ng-click="getRDPoolOfZoneAndType()">Get RRSet of Zone and Type
         </button>
-        <button id="Delete RD Pool" ng-click="makeAuthorizedRequest
-            ('/zones/' + rdpoolPathParam.zone + '/rrsets/' + rdpoolPathParam.recordType + '/' + rdpoolPathParam.owner, 'DELETE')">Delete RD Pool
+        <button id="Delete RD Pool" ng-click="deleteRDPool()">Delete RD Pool
         </button>
         <br>
         <br>
 
+    </div>
     </div>
     <hr>
 

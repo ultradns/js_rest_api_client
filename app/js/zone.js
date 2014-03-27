@@ -1,5 +1,10 @@
 'use strict';
 function ZoneCtrl($scope, $http, $parse, $resource) {
+// default zone creation values
+    $scope.assign('zone.properties.type', 'PRIMARY');
+    $scope.assign('zone.primaryCreateInfo.createType', 'NEW');
+    $scope.assign('zone.primaryCreateInfo.forceImport', 'true');
+
     function prepareZoneResource() {
         return $scope.prepareResource('/zones/:zoneName');
     }
