@@ -8,6 +8,7 @@
   <script src="lib/angular/angular.js"></script>
   <script src="lib/angular/angular-resource.js"></script>
   <script src="js/ctrl.js"></script>
+  <script src="js/version.js"></script>
 
 </head>
 <body>
@@ -17,34 +18,41 @@
 
 </script>
 
-<div ng-controller="Ctrl" ng-model="authResponse">
+<div ng-controller="Ctrl">
 
-    <!-- AUTHORIZE WITH PASSWORD -->
-   Rest API Url: <input type="text" name="apiurl" ng-model="apiurl" required>
-   <br> <br>
+    <!-- Response Area -->
+    <div  style="position:fixed; top:0; right:0; max-width:500px;">
+        <pre style="background-color:yellow">Response: {{generalResponse}}</pre>
+    </div>
 
-   Username: <input type="text" name="username" ng-model="username"required>
-   <br> <br>
+    <div>
+        <!-- AUTHORIZE WITH PASSWORD -->
+       Rest API Url: <input type="text" name="apiurl" ng-model="apiurl" required>
+       <br> <br>
 
-   Password: <input type="text" name="password" ng-model="password" ng-minlength="3" ng-maxlength="40" required>
+       Username: <input type="text" name="username" ng-model="username"required>
+       <br> <br>
 
-   <button id="Authorize" ng-click="authorize()">Authorize with Password</button><br>
-    <br>
+       Password: <input type="text" name="password" ng-model="password" ng-minlength="3" ng-maxlength="40" required>
+
+       <button id="Authorize" ng-click="authorize()">Authorize with Password</button><br>
+        <br>
 
 
-    <!-- AUTHORIZE WITH REFRESH TOKEN -->
-    <!--<pre>Access Token: {{authResponse.accessToken}}</pre>-->
-    <pre> You may obtain the tokens either by using 'Authorize with Password' or 'Authorize with Refresh Token' or you may enter the values of the tokens yourself</pre>
-    Access Token: <input type="text" name="accessToken" ng-model="authResponse.accessToken"><br>
-    Refresh Token:<input type="text" name="accessToken" ng-model="authResponse.refreshToken">
+        <!-- AUTHORIZE WITH REFRESH TOKEN -->
+        <!--<pre>Access Token: {{authResponse.accessToken}}</pre>-->
+        <pre> You may obtain the tokens either by using 'Authorize with Password' or 'Authorize with Refresh Token' or you may enter the values of the tokens yourself</pre>
+        Access Token: <input type="text" name="accessToken" ng-model="authResponse.accessToken"><br>
+        Refresh Token:<input type="text" name="accessToken" ng-model="authResponse.refreshToken">
 
-    <button id="AuthorizeWithRefreshToken" ng-click="authorizeWithRefreshToken()">Authorize with Refresh Token</button><br>
-    <hr>
+        <button id="AuthorizeWithRefreshToken" ng-click="authorizeWithRefreshToken()">Authorize with Refresh Token</button><br>
+        <hr>
+    </div>
 
 
     <!-- VERSION -->
-    <div>
-        <button id="Get Version" ng-click="makeRequest('/version', 'GET')">Get Version</button><br>
+    <div ng-controller="VersionCtrl">
+        <button id="Get Version" ng-click="getVersion()">Get Version</button><br>
         <br>
     </div>
     <hr>
@@ -214,10 +222,7 @@
 
 
 
-    <!-- Response Area -->
-    <div  style="position:fixed; top:0; right:0; max-width:500px;">
-        <pre style="background-color:yellow">Response: {{generalResponse}}</pre>
-    </div>
+
 
 </div>
 </body>

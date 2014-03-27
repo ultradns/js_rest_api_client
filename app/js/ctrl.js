@@ -32,7 +32,10 @@ function Ctrl($scope, $http, $parse, $resource) {
   assign('rrset.ttl', '300');
   assign('rrset.rdata', ['1.2.3.4']);
 
-  function prepareResource(endpoint) {
+  // The need for this method is to account for any changes in the apiurl entered by the user
+  // If there is no need to read the apiUrl as a User Input (i.e it is a constant), then the resource can be prepared
+  // once during page load and kept as a var
+  $scope.prepareResource = function(endpoint) {
     var res = $resource($scope.apiurl + endpoint,null,
         {
           'update': { method:'PUT' }
@@ -40,22 +43,46 @@ function Ctrl($scope, $http, $parse, $resource) {
     return res;
   }
 
-  // this is a special method for auth resource, reason being the Header for Content-Type
   function prepareAuthResource() {
-      var res = $resource($scope.apiurl + '/authorization/token',null,
-          {
-            'save': { method:'POST',
-                      headers: {'Content-Type': 'application/x-www-form-urlencoded'} }
-          });
-      return res;
+        var res = $resource($scope.apiurl + '/authorization/token',null,
+            {
+              'save': { method:'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'} }
+            });
+        return res;
     }
 
-  // The need for this method is to account for any changes in the apiurl entered by the user
-  // If there is no need to read the apiUrl as a User Input (i.e it is a constant), then the resource can be prepared
-  // once during page load and kept as a var
-  function prepareRRSetResource() {
-    return prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
-  }
+    $scope.authorize = function() {
+        var res = prepareAuthResource();
+        res.save(null, "grant_type=password&username=" + $scope.username + "&password=" + $scope.password,
+          function(data, status, headers, config) {
+              $scope.generalResponse = data;
+              $scope.authResponse = data;
+          },
+          function(error) {
+              $scope.authResponse = '';
+              $scope.generalResponse = error.data;
+          });
+    };
+
+    $scope.authorizeWithRefreshToken = function(callback) {
+      var res = prepareAuthResource();
+      res.save(null, 'grant_type=refresh_token&refresh_token=' + $scope.authResponse.refreshToken,
+          function(data, status, headers, config) {
+              $scope.generalResponse = data;
+              $scope.authResponse = data;
+              if(callback != null) {
+                  callback();
+              }
+          },
+          function(error) {
+              $scope.authResponse = '';
+              $scope.generalResponse = error.data;
+          }
+      );
+    };
+
+
 
   function massageRDPoolJson() {
       var origJson = angular.toJson($scope.rdpool);
@@ -67,7 +94,7 @@ function Ctrl($scope, $http, $parse, $resource) {
       $http.defaults.headers.common["Authorization"] = "Bearer " + $scope.authResponse.accessToken;
   }
 
-  function onSuccess (data, status, headers, config) {
+  $scope.onSuccess = function(data, status, headers, config) {
       $scope.generalResponse = data;
   }
 
@@ -81,7 +108,7 @@ function Ctrl($scope, $http, $parse, $resource) {
       }
   }
 
-  function onError (res, params, requestJson, doNotReattempt, functionToRetry) {
+  $scope.onError = function(res, params, requestJson, doNotReattempt, functionToRetry) {
       return function(error) {
           handleError(error, doNotReattempt, function() {
               functionToRetry(res,params, requestJson, true);
@@ -91,57 +118,31 @@ function Ctrl($scope, $http, $parse, $resource) {
 
   function getRequest(res, params, doNotReattempt) {
       setAuthHeader();
-      res.get(params, null, onSuccess,
-          onError(res, params, null, doNotReattempt, getRequest));
+      res.get(params, null, $scope.onSuccess,
+          $scope.onError(res, params, null, doNotReattempt, getRequest));
   }
 
   function deleteRequest(res, params, doNotReattempt) {
     setAuthHeader();
-    res.delete(params, null, onSuccess,
-        onError(res, params, null, doNotReattempt, deleteRequest));
+    res.delete(params, null, $scope.onSuccess,
+        $scope.onError(res, params, null, doNotReattempt, deleteRequest));
   }
 
   function saveRequest(res, params, requestJson, doNotReattempt) {
       setAuthHeader();
-      res.save(params, requestJson, onSuccess,
-          onError(res, params, requestJson, doNotReattempt, saveRequest));
+      res.save(params, requestJson, $scope.onSuccess,
+          $scope.onError(res, params, requestJson, doNotReattempt, saveRequest));
   }
 
   function updateRequest(res, params, requestJson, doNotReattempt) {
       setAuthHeader();
-      res.update(params, requestJson, onSuccess,
-          onError(res, params, requestJson, doNotReattempt, updateRequest));
+      res.update(params, requestJson, $scope.onSuccess,
+          $scope.onError(res, params, requestJson, doNotReattempt, updateRequest));
   }
 
-  $scope.authorize = function() {
-      var res = prepareAuthResource();
-      res.save(null, "grant_type=password&username=" + $scope.username + "&password=" + $scope.password,
-        function(data, status, headers, config) {
-            $scope.generalResponse = data;
-            $scope.authResponse = data;
-        },
-        function(error) {
-            $scope.authResponse = '';
-            $scope.generalResponse = error.data;
-        });
-  };
 
-  $scope.authorizeWithRefreshToken = function(callback) {
-    var res = prepareAuthResource();
-    res.save(null, 'grant_type=refresh_token&refresh_token=' + $scope.authResponse.refreshToken,
-        function(data, status, headers, config) {
-            $scope.generalResponse = data;
-            $scope.authResponse = data;
-            if(callback != null) {
-                callback();
-            }
-        },
-        function(error) {
-            $scope.authResponse = '';
-            $scope.generalResponse = error.data;
-        }
-    );
-  };
+// this is a special method for auth resource, reason being the Header for Content-Type
+
 
   $scope.makeRequest = function(requestUrl, method) {
       $http({method: method,
@@ -192,6 +193,13 @@ function Ctrl($scope, $http, $parse, $resource) {
         $scope.makeAuthorizedRequest('/zones', 'POST', $scope.zoneJson);
     }
 
+
+
+    /** RRSet Functions - should ideally go into a separate JS file**/
+    function prepareRRSetResource() {
+        return $scope.prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
+    }
+
     $scope.getRRSetOfZone = function(doNotReattempt) {
         getRequest(prepareRRSetResource(),
             {'zoneName':$scope.rrsetPathParam.zone});
@@ -220,6 +228,7 @@ function Ctrl($scope, $http, $parse, $resource) {
                     {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
                     $scope.rrsetJson);
     }
+    /** End RRSet Functions **/
 
     $scope.createRDPool = function() {
         massageRDPoolJson();
