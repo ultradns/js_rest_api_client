@@ -40,7 +40,19 @@ function Ctrl($scope, $http, $parse, $resource) {
     return res;
   }
 
+  // this is a special method for auth resource, reason being the Header for Content-Type
+  function prepareAuthResource() {
+      var res = $resource($scope.apiurl + '/authorization/token',null,
+          {
+            'save': { method:'POST',
+                      headers: {'Content-Type': 'application/x-www-form-urlencoded'} }
+          });
+      return res;
+    }
+
   // The need for this method is to account for any changes in the apiurl entered by the user
+  // If there is no need to read the apiUrl as a User Input (i.e it is a constant), then the resource can be prepared
+  // once during page load and kept as a var
   function prepareRRSetResource() {
     return prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
   }
@@ -77,6 +89,18 @@ function Ctrl($scope, $http, $parse, $resource) {
       }
   }
 
+  function getRequest(res, params, doNotReattempt) {
+      setAuthHeader();
+      res.get(params, null, onSuccess,
+          onError(res, params, null, doNotReattempt, getRequest));
+  }
+
+  function deleteRequest(res, params, doNotReattempt) {
+    setAuthHeader();
+    res.delete(params, null, onSuccess,
+        onError(res, params, null, doNotReattempt, deleteRequest));
+  }
+
   function saveRequest(res, params, requestJson, doNotReattempt) {
       setAuthHeader();
       res.save(params, requestJson, onSuccess,
@@ -90,38 +114,34 @@ function Ctrl($scope, $http, $parse, $resource) {
   }
 
   $scope.authorize = function() {
-    $http({method:'POST',
-        url:$scope.apiurl + '/authorization/token',
-        data:"grant_type=password&username=" + $scope.username + "&password=" + $scope.password,
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
-        .success(function (data, status, headers, config) {
+      var res = prepareAuthResource();
+      res.save(null, "grant_type=password&username=" + $scope.username + "&password=" + $scope.password,
+        function(data, status, headers, config) {
             $scope.generalResponse = data;
             $scope.authResponse = data;
-        })
-        .error(function (data, status, headers, config) {
+        },
+        function(error) {
             $scope.authResponse = '';
-            $scope.generalResponse = data;
+            $scope.generalResponse = error.data;
         });
   };
 
   $scope.authorizeWithRefreshToken = function(callback) {
-      $http({method:'POST',
-          url:$scope.apiurl + '/authorization/token',
-          data:"grant_type=refresh_token&refresh_token=" + $scope.authResponse.refreshToken,
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
-          .success(function (data, status, headers, config) {
-            $scope.authResponse = data;
+    var res = prepareAuthResource();
+    res.save(null, 'grant_type=refresh_token&refresh_token=' + $scope.authResponse.refreshToken,
+        function(data, status, headers, config) {
             $scope.generalResponse = data;
+            $scope.authResponse = data;
             if(callback != null) {
                 callback();
             }
-          })
-          .error(function (data, status, headers, config) {
-              $scope.authResponse = '';
-              $scope.generalResponse = data;
-
-          });
-    };
+        },
+        function(error) {
+            $scope.authResponse = '';
+            $scope.generalResponse = error.data;
+        }
+    );
+  };
 
   $scope.makeRequest = function(requestUrl, method) {
       $http({method: method,
@@ -172,6 +192,21 @@ function Ctrl($scope, $http, $parse, $resource) {
         $scope.makeAuthorizedRequest('/zones', 'POST', $scope.zoneJson);
     }
 
+    $scope.getRRSetOfZone = function(doNotReattempt) {
+        getRequest(prepareRRSetResource(),
+            {'zoneName':$scope.rrsetPathParam.zone});
+    }
+
+    $scope.getRRSetOfZoneAndType = function(doNotReattempt) {
+        getRequest(prepareRRSetResource(),
+            {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType});
+    }
+
+    $scope.deleteRRSet = function(doNotReattempt) {
+        deleteRequest(prepareRRSetResource(),
+            {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner});
+    }
+
     $scope.createRRSet = function(doNotReattempt) {
         $scope.rrsetJson = angular.toJson($scope.rrset);
         saveRequest(prepareRRSetResource(),
@@ -184,10 +219,6 @@ function Ctrl($scope, $http, $parse, $resource) {
         updateRequest(prepareRRSetResource(),
                     {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
                     $scope.rrsetJson);
-
-        // Alternate Solution to use HHTP
-//        $scope.makeAuthorizedRequest('/zones/' + $scope.rrsetPathParam.zone + '/rrsets/' + $scope.rrsetPathParam.recordType + "/" + $scope.rrsetPathParam.owner,
-//            'PUT', $scope.rrsetJson);
     }
 
     $scope.createRDPool = function() {

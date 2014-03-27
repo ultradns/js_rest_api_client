@@ -123,12 +123,11 @@
 
         <button id="Create RR Set" ng-click="createRRSet()">Create RR Set</button>
         <button id="Update RR Set" ng-click="updateRRSet()">Update RR Set</button>
-        <button id="Get RRSet of Zone" ng-click="makeAuthorizedRequest('/zones/' + rrsetPathParam.zone + '/rrsets', 'GET')">Get RRSets of Zone</button>
+        <button id="Get RRSet of Zone" ng-click="getRRSetOfZone()">Get RRSets of Zone</button>
         <button id="Get RRSet of Zone and Type"
-                ng-click="makeAuthorizedRequest('/zones/' + rrsetPathParam.zone + '/rrsets/' + rrsetPathParam.recordType, 'GET')">Get RRSet of Zone and Type
+                ng-click="getRRSetOfZoneAndType()">Get RRSet of Zone and Type
         </button>
-        <button id="Delete RR Set" ng-click="makeAuthorizedRequest
-            ('/zones/' + rrsetPathParam.zone + '/rrsets/' + rrsetPathParam.recordType + '/' + rrsetPathParam.owner, 'DELETE')">Delete RR Set
+        <button id="Delete RR Set" ng-click="deleteRRSet()">Delete RR Set
         </button>
         <br>
         <br>
