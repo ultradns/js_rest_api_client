@@ -1,6 +1,5 @@
 'use strict';
 function RRSetCtrl($scope, $http, $parse, $resource) {
-    /** RRSet Functions - should ideally go into a separate JS file**/
     function prepareRRSetResource() {
         return $scope.prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
     }
@@ -33,5 +32,4 @@ function RRSetCtrl($scope, $http, $parse, $resource) {
                     {'zoneName':$scope.rrsetPathParam.zone, 'recordType':$scope.rrsetPathParam.recordType, 'owner':$scope.rrsetPathParam.owner},
                     $scope.rrsetJson);
     }
-    /** End RRSet Functions **/
 }

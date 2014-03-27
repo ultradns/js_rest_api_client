@@ -9,6 +9,8 @@
   <script src="lib/angular/angular-resource.js"></script>
   <script src="js/ctrl.js"></script>
   <script src="js/version.js"></script>
+  <script src="js/status.js"></script>
+  <script src="js/account.js"></script>
   <script src="js/rrset.js"></script>
 </head>
 <body>
@@ -59,16 +61,16 @@
 
 
     <!-- STATUS -->
-    <div>
-        <button id="Get Status" ng-click="makeAuthorizedRequest('/status', 'GET')">Get Status</button><br>
+    <div ng-controller="StatusCtrl">
+        <button id="Get Status" ng-click="getStatus()">Get Status</button><br>
         <br>
     </div>
     <hr>
 
 
     <!-- GET ACCOUNT DETAILS-->
-    <div>
-        <button id="Get Account Details" ng-click="makeAuthorizedRequest('/accounts', 'GET')">Get Account Details</button><br>
+    <div ng-controller="AccountCtrl">
+        <button id="Get Account Details" ng-click="getAccountDetails()">Get Account Details</button><br>
         <br>
     </div>
     <hr>
