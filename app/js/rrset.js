@@ -3,6 +3,13 @@ function RRSetCtrl($scope, $http, $parse, $resource) {
     $scope.assign('rrset.ttl', '300');
     $scope.assign('rrset.rdata', ['1.2.3.4']);
 
+     // default rr set creation values
+    $scope.assign('rdpool.profile.context', 'http:\/\/schemas.ultradns.com\/RDPool.jsonschema');
+    $scope.assign('rdpool.profile.order', 'RANDOM');
+    $scope.assign('rdpool.profile.description', 'This is a great RD Pool');
+    $scope.assign('rdpool.ttl', '300');
+    $scope.assign('rdpool.rdata', ['1.2.3.4', '2.4.6.8', '3.5.7.8']);
+
     function prepareRRSetResource() {
         return $scope.prepareResource('/zones/:zoneName/rrsets/:recordType/:owner');
     }
