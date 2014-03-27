@@ -12,6 +12,7 @@
   <script src="js/status.js"></script>
   <script src="js/account.js"></script>
   <script src="js/rrset.js"></script>
+  <script src="js/zone.js"></script>
 </head>
 <body>
 
@@ -79,7 +80,7 @@
 
 
     <!-- ZONE OPERATIONS-->
-    <div>
+    <div ng-controller="ZoneCtrl">
         Zonename: <input type="text" name="name" ng-model="zone.properties.name" required>
         <br> <br>
 
@@ -98,9 +99,9 @@
         <pre>Zone JSON: {{zoneJson}}</pre>
 
         <button id="Create Primary Zone" ng-click="createZone()">Create Primary Zone</button>
-        <button id="Get Zone Meta Data" ng-click="makeAuthorizedRequest('/zones/' + zone.properties.name, 'GET')">Get Zone Metadata</button>
-        <button id="Get Zones of Account" ng-click="makeAuthorizedRequest('/accounts/' + zone.properties.accountName + '/zones', 'GET')">Get Zones of Account</button>
-        <button id="Delete Zone " ng-click="makeAuthorizedRequest('/zones/' + zone.properties.name, 'DELETE')">Delete Zone</button>
+        <button id="Get Zone Meta Data" ng-click="getZoneMetaData()">Get Zone Metadata</button>
+        <button id="Get Zones of Account" ng-click="getZonesOfAccount()">Get Zones of Account</button>
+        <button id="Delete Zone " ng-click="deleteZone()">Delete Zone</button>
         <br>
         <br>
 

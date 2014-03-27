@@ -187,14 +187,6 @@ function Ctrl($scope, $http, $parse, $resource) {
     }
   };
 
-
-    $scope.createZone = function() {
-        $scope.zoneJson = angular.toJson($scope.zone);
-        $scope.makeAuthorizedRequest('/zones', 'POST', $scope.zoneJson);
-    }
-
-
-
     $scope.createRDPool = function() {
         massageRDPoolJson();
         $scope.makeAuthorizedRequest('/zones/' + $scope.rdpoolPathParam.zone + '/rrsets/' + $scope.rdpoolPathParam.recordType + "/" + $scope.rdpoolPathParam.owner,
