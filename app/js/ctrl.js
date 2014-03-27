@@ -118,10 +118,8 @@ function Ctrl($scope, $http, $parse, $resource) {
           $scope.onError(res, params, requestJson, doNotReattempt, $scope.updateRequest));
     }
 
-
-    // this is a special method for auth resource, reason being the Header for Content-Type
-
-
+    // Following couple of methods use $http rather than $resource
+    // Useful for making generic calls when the endpoint the user wants to hit is user entered
     $scope.makeRequest = function(requestUrl, method) {
       $http({method: method,
           url:$scope.apiurl + requestUrl,
@@ -133,7 +131,6 @@ function Ctrl($scope, $http, $parse, $resource) {
               $scope.generalResponse = data;
           });
     };
-
 
     $scope.makeAuthorizedRequest = function(requestUrl, method, inputLoad, doNotReattempt) {
         if($scope.authResponse == undefined) {
