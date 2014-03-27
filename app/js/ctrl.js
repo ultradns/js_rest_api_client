@@ -79,7 +79,7 @@ function Ctrl($scope, $http, $parse, $resource) {
     function handleError(error, doNotReattempt, callback)  {
       $scope.generalResponse = error.data;
       var errorCode = error.data.errorCode;
-      if(errorCode == '60001' && doNotReattempt != 'true') {
+      if(errorCode == '60001' && !doNotReattempt) {
           // specifying callback to be called on success of refresh token retrieval
           // the callback will attempt to make another request with new token values
           $scope.authorizeWithRefreshToken(callback);
@@ -153,11 +153,11 @@ function Ctrl($scope, $http, $parse, $resource) {
 
                     // reattempt after refreshing token. Only do so once to make sure that we do not keep retrying
                     // also attempt only if it is an auth error and not anything else.
-                    if(errorCode == '60001' && doNotReattempt != 'true') {
+                    if(errorCode == '60001' && !doNotReattempt) {
                         // specifying callback to be called on success of refresh token retrieval
                         // the callback will attempt to make another request with new token values
                         $scope.authorizeWithRefreshToken(function() {
-                            $scope.makeAuthorizedRequest(requestUrl, method, inputLoad, 'true');
+                            $scope.makeAuthorizedRequest(requestUrl, method, inputLoad, true);
                         });
                     }
                 }
