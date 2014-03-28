@@ -5,8 +5,8 @@
 function Ctrl($scope, $http, $parse, $resource) {
     // default values
     $scope.apiurl = 'http://localhost:8080/v1';
-    $scope.username = 'teamrest';
-    $scope.password = 'Teamrest1';
+    $scope.username = '';
+    $scope.password = '';
 
     // Helper function to assign default initial values
     $scope.assign = function(variable, value) {
